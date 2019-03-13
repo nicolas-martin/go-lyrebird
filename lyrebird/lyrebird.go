@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	authorizeURL = "https://myvoice.lyrebird.ai/authorize"
-
+	authorizeURL   = "https://myvoice.lyrebird.ai/authorize"
 	tokenURL       = "https://avatar.lyrebird.ai/api/v0/token"
 	defaultBaseURL = "https://avatar.lyrebird.ai/api/v0/"
 )
@@ -113,18 +112,14 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Res
 	}
 
 	if response.Response.StatusCode != 200 {
-		if readErr != nil {
-			return response, readErr
-		}
 		return response, errors.New(string(b))
-
 	}
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
 			io.Copy(w, resp.Body)
 		} else {
-			decErr := json.NewDecoder(resp.Body).Decode(v)
+			decErr := json.Unmarshal(b, v)
 			if decErr == io.EOF {
 				decErr = nil // ignore EOF errors caused by empty response body
 			}

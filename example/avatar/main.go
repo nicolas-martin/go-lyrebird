@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"lyrebird-go/lyrebird"
+	"net/http"
 	"net/url"
 	"os"
 
@@ -14,6 +15,7 @@ import (
 func main() {
 	lyrebirdCode := os.Getenv("LYREBIRD_CODE")
 	ctx := context.Background()
+	var client *http.Client
 	if len(lyrebirdCode) == 0 {
 
 		lyrebirdClientID := os.Getenv("LYREBIRD_CLIENT_ID")
@@ -22,7 +24,7 @@ func main() {
 		conf := &oauth2.Config{
 			ClientID:     lyrebirdClientID,
 			ClientSecret: lyrebirdSecret,
-			Scopes:       []string{"voice"},
+			Scopes:       []string{"profile"},
 			Endpoint: oauth2.Endpoint{
 				AuthURL:  "https://myvoice.lyrebird.ai/authorize",
 				TokenURL: "https://avatar.lyrebird.ai/api/v0/token",
@@ -44,27 +46,29 @@ func main() {
 		if _, err := fmt.Scan(&lyrebirdCode); err != nil {
 			log.Fatal(err)
 		}
-	}
-	// tok, err := conf.Exchange(ctx, code)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+		tok, err := conf.Exchange(ctx, lyrebirdCode)
+		if err != nil {
+			log.Fatal(err)
+		}
+		client = conf.Client(ctx, tok)
+	} else {
 
-	// client := conf.Client(ctx, tok)
-	client := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{
-		AccessToken: lyrebirdCode,
-		TokenType:   "Bearer",
-	}))
+		client = oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{
+			AccessToken: lyrebirdCode,
+			TokenType:   "Bearer",
+		}))
+	}
 
 	lyreBirdClient := lyrebird.NewClient(client)
 
-	a, r, err := lyreBirdClient.AvatarService.Generate(ctx, "generate something")
+	p, r, err := lyreBirdClient.AvatarService.Profile(ctx)
 	if err != nil {
 		fmt.Printf("error: %s \r\n", err.Error())
 		fmt.Println(r.StatusCode)
 		return
 	}
+	fmt.Println(r.StatusCode)
 
-	fmt.Println(a.Description)
+	fmt.Println(p.DisplayName)
 
 }

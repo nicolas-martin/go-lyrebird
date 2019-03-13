@@ -35,6 +35,7 @@ type generateBody struct {
 	Text string
 }
 
+// Profile represents a Lyrebird profile
 type Profile struct {
 	DisplayName string `json:"display_name"`
 	Email       string `json:"email"`
