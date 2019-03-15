@@ -16,6 +16,7 @@ func main() {
 	lyrebirdCode := os.Getenv("LYREBIRD_CODE")
 	ctx := context.Background()
 	var client *http.Client
+
 	if len(lyrebirdCode) == 0 {
 
 		lyrebirdClientID := os.Getenv("LYREBIRD_CLIENT_ID")
@@ -38,6 +39,7 @@ func main() {
 		if err != nil {
 			fmt.Println("invalid url")
 		}
+
 		urlQuery := u0.Query()
 		urlQuery.Set("response_type", "token")
 		u0.RawQuery = urlQuery.Encode()
@@ -46,13 +48,14 @@ func main() {
 		if _, err := fmt.Scan(&lyrebirdCode); err != nil {
 			log.Fatal(err)
 		}
+
 		tok, err := conf.Exchange(ctx, lyrebirdCode)
+
 		if err != nil {
 			log.Fatal(err)
 		}
 		client = conf.Client(ctx, tok)
 	} else {
-
 		client = oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{
 			AccessToken: lyrebirdCode,
 			TokenType:   "Bearer",
@@ -63,12 +66,9 @@ func main() {
 
 	p, r, err := lyreBirdClient.AvatarService.Profile(ctx)
 	if err != nil {
-		fmt.Printf("error: %s \r\n", err.Error())
-		fmt.Println(r.StatusCode)
-		return
+		log.Fatal(err)
 	}
+
 	fmt.Println(r.StatusCode)
-
 	fmt.Println(p.DisplayName)
-
 }
